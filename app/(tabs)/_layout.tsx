@@ -25,7 +25,7 @@ export default function TabsLayout() {
               color={color}
             />
           ),
-          //   headerTitleAlign: "center",
+          headerTitleAlign: "center",
           //   headerLeft: () => null,
         }}
       />
@@ -42,13 +42,7 @@ export default function TabsLayout() {
               color={color}
             />
           ),
-          //   headerTitleAlign: "center",
-        }}
-      />
-      <Tabs.Screen
-        name="+not-found"
-        options={{
-          headerShown: false,
+          headerTitleAlign: "center",
         }}
       />
     </Tabs>
