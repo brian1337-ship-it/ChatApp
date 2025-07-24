@@ -20,11 +20,14 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "splash": {
+      "image": "./assets/images/SplashScreen.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -34,8 +37,6 @@
         }
       ]
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "assetBundlePatterns": ["assets/**/*"]
   }
 }

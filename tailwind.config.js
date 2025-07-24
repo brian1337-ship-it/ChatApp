@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  content: ["./App.tsx", "./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
@@ -9,6 +9,13 @@ module.exports = {
         "roboto-italic": ["Roboto-Italic"],
         "roboto-bold": ["Roboto-Bold"],
       },
+      // colors: {
+      //   chatapp: {
+      //     green: "#25D366", // green for chat bubbles
+      //     background: "#E8E1D9", // Default chat background (light mode)
+      //     "dark-background": "#0B141A", // chat dark mode background
+      //   },
+      // },
     },
   },
   plugins: [],
