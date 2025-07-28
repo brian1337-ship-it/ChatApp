@@ -2,11 +2,20 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, useRef, useState } from "react";
-import { Animated, SafeAreaView, StatusBar, View } from "react-native";
+import { IntlProvider } from "react-intl";
+import {
+  Animated,
+  FlatList,
+  SafeAreaView,
+  StatusBar,
+  View,
+} from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useShallow } from "zustand/shallow";
 import "./global.css";
 import ChatInput from "./src/components/ChatInput";
+import { MakeAnimation } from "./src/components/Helpers";
+import SingleMessage from "./src/components/SingleMessage";
 import { useChatStore } from "./src/store/useChatStore";
 
 // Prevent splash screen from auto-hiding until fonts are loaded
@@ -42,9 +51,38 @@ export default function App() {
   // Animation for reply container
   const ReplyContainerAnimation = useRef(new Animated.Value(40)).current;
   const item = "you";
+  const user = "You"; // Assuming item contains the user info
   // Refs for input and message container
   const InputRef = useRef(null);
   const MessageContainerRef = useRef(null);
+  // Scroll to bottom when layout changes
+  function scrollToBottom(e) {
+    MessageContainerRef?.current?.scrollToEnd({ animated: true });
+    setContentHeight(e.nativeEvent.layout.height);
+  }
+
+  // Present bottom sheet modal for reactions
+  const handlePresentModalPress = useCallback((reactions) => {
+    bottomSheetRef.current?.present();
+    setClickedMessageReactions(reactions);
+  }, []);
+
+  // Emoji modal position and animation
+  const [emojiModalPositon, setemojiModalPositon] = useState({
+    x: 0,
+    y: 0,
+    opacity: 0,
+  });
+  const EmojiContainerAnimation = useRef(new Animated.Value(0.2)).current;
+  // Animate emoji container open/close
+  const AnimateContainer = () => {
+    MakeAnimation(EmojiContainerAnimation, 1, 1000);
+  };
+  const CloseContainer = () => {
+    MakeAnimation(EmojiContainerAnimation, 0, 500);
+  };
+  // Selection state for emoji modal
+  const [checkSelection, setcheckSelection] = useState(false);
 
   const [messageText, setMessageText] = useState("");
 
@@ -97,14 +135,15 @@ export default function App() {
         edges={["right", "left", "bottom"]}
       >
         <BottomSheetModalProvider>
-          {/* Loading dialog */}
-          {/* <LoadingModal
+          <IntlProvider locale="en" defaultLocale="en">
+            {/* Loading dialog */}
+            {/* <LoadingModal
         showloadingDialog={showloadingDialog}
         setshowloadingDialog={setshowloadingDialog}
       /> */}
 
-          {/* Block user modal */}
-          {/* <BlockModal
+            {/* Block user modal */}
+            {/* <BlockModal
         name={item.name}
         setopenBlockModal={setopenBlockModal}
         openBlockModal={openBlockModal}
@@ -113,15 +152,15 @@ export default function App() {
         setshowloadingDialog={setshowloadingDialog}
       /> */}
 
-          {/* Mute notifications dialog */}
-          {/* <MuteNotificationsDialog
+            {/* Mute notifications dialog */}
+            {/* <MuteNotificationsDialog
         item={item}
         mutedDialogOpen={mutedDialogOpen}
         setmutedDialogOpen={setmutedDialogOpen}
       /> */}
 
-          {/* Delete message modal */}
-          {/* <DeleteModal
+            {/* Delete message modal */}
+            {/* <DeleteModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         showDeleteforeveryone={showDeleteforeveryone}
@@ -130,8 +169,8 @@ export default function App() {
         dispatch={dispatch}
       /> */}
 
-          {/* Emoji reaction modal */}
-          {/* <ReactEmojiModal
+            {/* Emoji reaction modal */}
+            {/* <ReactEmojiModal
         setIsOpen={setIsOpen}
         CloseContainer={CloseContainer}
         dispatch={dispatch}
@@ -141,16 +180,16 @@ export default function App() {
         emojiModalPositon={emojiModalPositon}
       /> */}
 
-          {/* Main chat screen container */}
-          <View className="flex-1 bg-[#121b22]">
-            {/* Message options modal */}
-            {/* <MessageModal
+            {/* Main chat screen container */}
+            <View className="flex-1 bg-[#121b22]">
+              {/* Message options modal */}
+              {/* <MessageModal
               MenuVisible={MenuVisible}
               setMenuVisible={setMenuVisible}
             /> */}
 
-            {/* Emoji picker for input field */}
-            {/* <EmojiPicker
+              {/* Emoji picker for input field */}
+              {/* <EmojiPicker
               open={isOpen}
               onEmojiSelected={(emojiObject) => {
                 setvalue((prev) => prev + emojiObject.emoji);
@@ -158,8 +197,8 @@ export default function App() {
               onClose={() => setIsOpen(false)}
             /> */}
 
-            {/* Bottom sheet modal for reactions */}
-            {/* <BottomSheetModal
+              {/* Bottom sheet modal for reactions */}
+              {/* <BottomSheetModal
               enablePanDownToClose={true}
               handleIndicatorStyle={{ backgroundColor: CHAT_DATA_STATUS_COLOR }}
               ref={bottomSheetRef}
@@ -198,82 +237,84 @@ export default function App() {
               </View>
             </BottomSheetModal> */}
 
-            {/* Messages list */}
-            {/* <View
-              style={{
-                flex: 10,
-                paddingTop: 20,
-              }}
-            >
-              <FlatList
-                ref={MessageContainerRef}
-                data={messages}
-                onLayout={scrollToBottom}
-                keyExtractor={(item) => item.key}
-                onContentSizeChange={(width, height) =>
-                  setContentHeight(height)
-                }
-                onScroll={(e) => {
-                  setContentVerticalOffset(e.nativeEvent.contentOffset.y);
-                  setShowScrollToBottomButton(
-                    e.nativeEvent.contentOffset.y + height < contentHeight
-                  );
-                }}
-                renderItem={({ item, index }) => {
-                  const isEven = index % 2 == 0;
+              {/* Messages list */}
+              <View
+                //   style={{
+                //     flex: 10,
+                //     paddingTop: 20,
+                //   }}
+                className="flex-[10] pt-[20px]"
+              >
+                <FlatList
+                  ref={MessageContainerRef}
+                  data={messages}
+                  onLayout={scrollToBottom}
+                  keyExtractor={(item) => item.key}
+                  onContentSizeChange={(width, height) =>
+                    setContentHeight(height)
+                  }
+                  onScroll={(e) => {
+                    setContentVerticalOffset(e.nativeEvent.contentOffset.y);
+                    setShowScrollToBottomButton(
+                      e.nativeEvent.contentOffset.y + height < contentHeight
+                    );
+                  }}
+                  renderItem={({ item, index }) => {
+                    const isEven = index % 2 == 0;
 
-                  return (
-                    <SingleMessage
-                      key={item.key}
-                      item={item}
-                      isEven={isEven}
-                      index={index}
-                      dispatch={dispatch}
-                      keyOfMessage={item.key}
-                      setemojiModalPositon={setemojiModalPositon}
-                      AnimateContainer={AnimateContainer}
-                      CloseContainer={CloseContainer}
-                      setcheckSelection={setcheckSelection}
-                      handlePresentModalPress={handlePresentModalPress}
-                      ReplyContainerAnimation={ReplyContainerAnimation}
-                      ref={{ InputRef, MessageContainerRef }}
-                      setshowingReplyMessage={setshowingReplyMessage}
-                      replieduser={user}
-                      messages={messages}
-                    />
-                  );
-                }}
-              />
-            </View> */}
+                    return (
+                      <SingleMessage
+                        key={item.key}
+                        item={item}
+                        isEven={isEven}
+                        index={index}
+                        dispatch={addMessage}
+                        keyOfMessage={item.key}
+                        setemojiModalPositon={setemojiModalPositon}
+                        AnimateContainer={AnimateContainer}
+                        CloseContainer={CloseContainer}
+                        setcheckSelection={setcheckSelection}
+                        handlePresentModalPress={handlePresentModalPress}
+                        ReplyContainerAnimation={ReplyContainerAnimation}
+                        ref={{ InputRef, MessageContainerRef }}
+                        setshowingReplyMessage={setshowingReplyMessage}
+                        replieduser={user} // TODO Assuming item contains the user info
+                        messages={messages}
+                      />
+                    );
+                  }}
+                />
+              </View>
 
-            {/* Message input field at bottom */}
-            <View>
-              <ChatInput
-                messages={messages}
-                value={value}
-                setvalue={setvalue}
-                paddingRight={paddingRight}
-                ClipandCameraAnimation={ClipandCameraAnimation}
-                setIsOpen={setIsOpen}
-                sendButtonAnimation={sendButtonAnimation}
-                dispatch={addMessage}
-                setMenuVisible={setMenuVisible}
-                replyAnimation={replyAnimation}
-                setpaddingRight={setpaddingRight}
-                replyMessage={showingReplyMessage}
-                setshowingReplyMessage={setshowingReplyMessage}
-                ReplyContainerAnimation={ReplyContainerAnimation}
-                item={item}
-                ref={{
-                  inputRef: InputRef,
-                  MessageContainerRef: MessageContainerRef,
-                }}
-              />
+              {/* Message input field at bottom */}
+              <View>
+                <ChatInput
+                  messages={messages}
+                  value={value}
+                  setvalue={setvalue}
+                  paddingRight={paddingRight}
+                  ClipandCameraAnimation={ClipandCameraAnimation}
+                  setIsOpen={setIsOpen}
+                  sendButtonAnimation={sendButtonAnimation}
+                  dispatch={addMessage}
+                  setMenuVisible={setMenuVisible}
+                  replyAnimation={replyAnimation}
+                  setpaddingRight={setpaddingRight}
+                  replyMessage={showingReplyMessage}
+                  setshowingReplyMessage={setshowingReplyMessage}
+                  ReplyContainerAnimation={ReplyContainerAnimation}
+                  item={item}
+                  ref={{
+                    inputRef: InputRef,
+                    MessageContainerRef: MessageContainerRef,
+                  }}
+                />
+              </View>
+
+              {/* Scroll to bottom button */}
+              {/* {ShowScrollToBottomButton && <ScrollToBottomButton />} */}
             </View>
-
-            {/* Scroll to bottom button */}
-            {/* {ShowScrollToBottomButton && <ScrollToBottomButton />} */}
-          </View>
+          </IntlProvider>
         </BottomSheetModalProvider>
 
         {/* <ImageBackground
