@@ -1,4 +1,10 @@
-import { Entypo, Fontisto, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+  Entypo,
+  Feather,
+  Fontisto,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Animated,
@@ -168,18 +174,18 @@ const ChatInput = React.forwardRef(function MessageInput(
       {/* Main input container for typing messages */}
       <View
         // style={[
-        //   styles.inputContainer,
-        //   {
-        //     overflow: "hidden",
-        //     marginBottom: 10,
-        //     position: "absolute",
-        //     bottom: 0,
-        //     left: 0,
-        //     right: 50,
-        //     height: HeightOfMessageBox < 45 ? 45 : HeightOfMessageBox,
-        //   },
+        // styles.inputContainer,
+        // {
+        //   overflow: "hidden",
+        //   marginBottom: 10,
+        //   position: "absolute",
+        //   bottom: 0,
+        //   left: 0,
+        //   right: 50,
+        //   height: HeightOfMessageBox < 45 ? 45 : HeightOfMessageBox,
+        // },
         // ]}
-        className={` flex-[8] flex-row bg-[${ANSWER_BACKGROUND_COLOR}] rounded-[10px] mx-[10px] mt-[5px] h-[45px] max-h-[130px] overflow-hidden mb-[10px] absolute bottom-0 left-0 right-[50px]`}
+        className={` flex-[8] flex-row bg-[#1f2c34] rounded-[50px] mx-[10px] mt-[5px] h-[45px] max-h-[130px] overflow-hidden mb-[10px] absolute bottom-0 left-0 right-[50px] ${HeightOfMessageBox < 45 ? "h-[45px]" : `h-[${HeightOfMessageBox}px]`}`}
       >
         {/* Emoji picker button */}
         <View style={[styles.emoji, { alignSelf: "flex-end" }]}>
@@ -233,9 +239,9 @@ const ChatInput = React.forwardRef(function MessageInput(
             />
           </MessagesRippleButton>
           {/* // TODO: Camera button to navigate to camera screen */}
-          {/* <MessagesRippleButton onPress={() => navigation.navigate("Camera")}>
+          <MessagesRippleButton onPress={() => navigation.navigate("Camera")}>
             <Feather name="camera" size={20} color={EMOJI_BACKGROUND_COLOR} />
-          </MessagesRippleButton> */}
+          </MessagesRippleButton>
         </Animated.View>
       </View>
       {/* Send button (voice or send icon, animated) */}
